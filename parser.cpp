@@ -39,16 +39,17 @@ struct Token
 
 class Lexer
 {
-
 private:
     string src;
     size_t pos;
+    int line;
 
 public:
     Lexer(const string &src)
     {
         this->src = src;
         this->pos = 0;
+        this->line = 1;
     }
 
     vector<Token> tokenize()
@@ -58,6 +59,10 @@ public:
         while (pos < src.size())
         {
             char current = src[pos];
+            if (current == '\n')
+            {
+                line++;
+            }
 
             if (isspace(current))
             {
@@ -122,7 +127,7 @@ public:
                 tokens.push_back(Token{T_GT, ">"});
                 break;
             default:
-                cout << "Unexpected character: " << current << endl;
+                cout << "Unexpected character: " << current << " at line " << line << endl;
                 exit(1);
             }
             pos++;
@@ -146,17 +151,22 @@ public:
             pos++;
         return src.substr(start, pos - start);
     }
+
+    int getLineNumber() const
+    {
+        return line;
+    }
 };
 
 class Parser
 {
+private:
+    vector<Token> tokens;
+    size_t pos;
+    Lexer &lexer; // Reference to the Lexer instance
 
 public:
-    Parser(const vector<Token> &tokens)
-    {
-        this->tokens = tokens;
-        this->pos = 0;
-    }
+    Parser(const vector<Token> &tokens, Lexer &lexer) : tokens(tokens), pos(0), lexer(lexer) {}
 
     void parseProgram()
     {
@@ -166,10 +176,6 @@ public:
         }
         cout << "Parsing completed successfully! No Syntax Error" << endl;
     }
-
-private:
-    vector<Token> tokens;
-    size_t pos;
 
     void parseStatement()
     {
@@ -195,7 +201,7 @@ private:
         }
         else
         {
-            cout << "Syntax error: unexpected token " << tokens[pos].value << endl;
+            cout << "Syntax error: unexpected token " << tokens[pos].value << " at line " << lexer.getLineNumber() << endl;
             exit(1);
         }
     }
@@ -209,6 +215,7 @@ private:
         }
         expect(T_RBRACE);
     }
+
     void parseDeclaration()
     {
         expect(T_INT);
@@ -284,7 +291,7 @@ private:
         }
         else
         {
-            cout << "Syntax error: unexpected token " << tokens[pos].value << endl;
+            cout << "Syntax error: unexpected token " << tokens[pos].value << " at line " << lexer.getLineNumber() << endl;
             exit(1);
         }
     }
@@ -297,7 +304,7 @@ private:
         }
         else
         {
-            cout << "Syntax error: expected " << type << " but found " << tokens[pos].value << endl;
+            cout << "Syntax error: expected " << type << " but found " << tokens[pos].value << " at line " << lexer.getLineNumber() << endl;
             exit(1);
         }
     }
@@ -305,19 +312,6 @@ private:
 
 int main(int argc, char *argv[])
 {
-    /*string input = R"(
-        int a;
-        a = 5;
-        int b;
-        b = a + 10;
-        if (b > 10) {
-            return b;
-        } else {
-            return 0;
-        }
-    )";
-*/
-
     if (argc != 2)
     {
         cout << "Usage: " << argv[0] << " <source-file>" << endl;
@@ -335,7 +329,7 @@ int main(int argc, char *argv[])
     Lexer lexer(input);
     vector<Token> tokens = lexer.tokenize();
 
-    Parser parser(tokens);
+    Parser parser(tokens, lexer);
     parser.parseProgram();
 
     return 0;
