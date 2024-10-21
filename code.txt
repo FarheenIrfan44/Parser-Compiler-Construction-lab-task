@@ -1,9 +1,8 @@
 int a;
 a = 5;
 int b;
-b = a + 10;
-agar (b > 10) {
-return b;
-} else {
-return 0;
+b=2;
+float c;
+while(b < 10){
+    b = 10;
 }

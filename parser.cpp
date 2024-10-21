@@ -303,7 +303,7 @@ public:
 
     void parseDeclaration()
     {
-        // Accept all types now
+    
         if (tokens[pos].type == T_INT || tokens[pos].type == T_FLOAT || tokens[pos].type == T_DOUBLE ||
             tokens[pos].type == T_STRING || tokens[pos].type == T_CHAR || tokens[pos].type == T_BOOL)
         {
@@ -323,7 +323,7 @@ public:
 
     void parseIfStatement()
     {
-        expect(T_AGAR); // Custom 'if'
+        expect(T_AGAR); 
         expect(T_LPAREN);
         parseExpression();
         expect(T_RPAREN);
