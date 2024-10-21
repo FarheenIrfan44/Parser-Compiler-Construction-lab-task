@@ -263,7 +263,7 @@ public:
         if (tokens[pos].type == T_GT)
         {
             pos++;
-            parseExpression(); // After relational operator, parse the next expression
+            parseExpression(); 
         }
     }
 
@@ -295,6 +295,53 @@ public:
             exit(1);
         }
     }
+    string tokenTypeToString(TokenType type)
+{
+    switch (type)
+    {
+    case T_INT:
+        return "Int";
+    case T_ID:
+        return "ID";
+    case T_NUM:
+        return "Num";
+    case T_IF:
+        return "T_IF";
+    case T_ELSE:
+        return "else";
+    case T_RETURN:
+        return "Return";
+    case T_ASSIGN:
+        return "Assign";
+    case T_PLUS:
+        return "Plus";
+    case T_MINUS:
+        return "Minus";
+    case T_MUL:
+        return "Multiplication";
+    case T_DIV:
+        return "Divide";
+    case T_LPAREN:
+        return "Left parenthesis";
+    case T_RPAREN:
+        return "Right parenthesis";
+    case T_LBRACE:
+        return "Left brace";
+    case T_RBRACE:
+        return "Right brace";
+    case T_SEMICOLON:
+        return "Semicolon";
+    case T_GT:
+        return "Greater than";
+    case T_FLT:
+        return "Float";
+    case T_EOF:
+        return "EOF";
+    default:
+        return "UNKNOWN";
+    }
+}
+
 
     void expect(TokenType type)
     {
@@ -304,8 +351,10 @@ public:
         }
         else
         {
-            cout << "Syntax error: expected " << type << " but found " << tokens[pos].value << " at line " << lexer.getLineNumber() << endl;
-            exit(1);
+            cout << "Syntax error: expected " << tokenTypeToString(type)
+             << " but found " << tokens[pos].value
+             << " at line " << lexer.getLineNumber() << endl;
+        exit(1);
         }
     }
 };
