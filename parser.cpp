@@ -2,6 +2,7 @@
 #include <vector>
 #include <map>
 #include <cctype>
+#include<fstream>
 #include <string>
 
 using namespace std;
@@ -301,9 +302,9 @@ private:
     }
 };
 
-int main()
+int main(int argc, char *argv[])
 {
-    string input = R"(
+    /*string input = R"(
         int a;
         a = 5;
         int b;
@@ -314,7 +315,21 @@ int main()
             return 0;
         }
     )";
+*/
+ if (argc != 2)
+    {
+        cout << "Usage: " << argv[0] << " <source-file>" << endl;
+        return 1;
+    }
 
+    ifstream file(argv[1]);
+    if (!file)
+    {
+        cout << "Error: Cannot open file " << argv[1] << endl;
+        return 1;
+    }
+
+    string input((istreambuf_iterator<char>(file)), istreambuf_iterator<char>());
     Lexer lexer(input);
     vector<Token> tokens = lexer.tokenize();
 
