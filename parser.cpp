@@ -11,6 +11,11 @@ using namespace std;
 enum TokenType
 {
     T_INT,
+    T_FLOAT,
+    T_DOUBLE,
+    T_STRING,
+    T_BOOL,
+    T_CHAR,
     T_ID,
     T_NUM,
     T_IF,
@@ -27,7 +32,14 @@ enum TokenType
     T_RBRACE,
     T_SEMICOLON,
     T_GT,
-    T_FLT,
+    T_LT,   
+    T_EQ,   
+    T_NEQ,  
+    T_AND,  
+    T_OR,   
+    T_WHILE,
+    T_FOR,
+    T_AGAR, 
     T_EOF,
 };
 
@@ -80,12 +92,26 @@ public:
                 string word = consumeWord();
                 if (word == "int")
                     tokens.push_back(Token{T_INT, word});
-                else if (word == "if")
-                    tokens.push_back(Token{T_IF, word});
+                else if (word == "float")
+                    tokens.push_back(Token{T_FLOAT, word});
+                else if (word == "double")
+                    tokens.push_back(Token{T_DOUBLE, word});
+                else if (word == "string")
+                    tokens.push_back(Token{T_STRING, word});
+                else if (word == "bool")
+                    tokens.push_back(Token{T_BOOL, word});
+                else if (word == "char")
+                    tokens.push_back(Token{T_CHAR, word});
+                else if (word == "agar") // Custom keyword for 'if'
+                    tokens.push_back(Token{T_AGAR, word});
                 else if (word == "else")
                     tokens.push_back(Token{T_ELSE, word});
                 else if (word == "return")
                     tokens.push_back(Token{T_RETURN, word});
+                else if (word == "while")
+                    tokens.push_back(Token{T_WHILE, word});
+                else if (word == "for")
+                    tokens.push_back(Token{T_FOR, word});
                 else
                     tokens.push_back(Token{T_ID, word});
                 continue;
@@ -94,7 +120,15 @@ public:
             switch (current)
             {
             case '=':
-                tokens.push_back(Token{T_ASSIGN, "="});
+                if (peek() == '=')
+                {
+                    pos++;
+                    tokens.push_back(Token{T_EQ, "=="});
+                }
+                else
+                {
+                    tokens.push_back(Token{T_ASSIGN, "="});
+                }
                 break;
             case '+':
                 tokens.push_back(Token{T_PLUS, "+"});
@@ -126,6 +160,45 @@ public:
             case '>':
                 tokens.push_back(Token{T_GT, ">"});
                 break;
+            case '<':
+                tokens.push_back(Token{T_LT, "<"});
+                break;
+            case '&':
+                if (peek() == '&')
+                {
+                    pos++;
+                    tokens.push_back(Token{T_AND, "&&"});
+                }
+                else
+                {
+                    cout << "Unexpected character '&' at line " << line << endl;
+                    exit(1);
+                }
+                break;
+            case '|':
+                if (peek() == '|')
+                {
+                    pos++;
+                    tokens.push_back(Token{T_OR, "||"});
+                }
+                else
+                {
+                    cout << "Unexpected character '|' at line " << line << endl;
+                    exit(1);
+                }
+                break;
+            case '!':
+                if (peek() == '=')
+                {
+                    pos++;
+                    tokens.push_back(Token{T_NEQ, "!="});
+                }
+                else
+                {
+                    cout << "Unexpected character '!' at line " << line << endl;
+                    exit(1);
+                }
+                break;
             default:
                 cout << "Unexpected character: " << current << " at line " << line << endl;
                 exit(1);
@@ -134,6 +207,13 @@ public:
         }
         tokens.push_back(Token{T_EOF, ""});
         return tokens;
+    }
+
+    char peek()
+    {
+        if (pos + 1 >= src.size())
+            return '\0';
+        return src[pos + 1];
     }
 
     string consumeNumber()
@@ -163,7 +243,7 @@ class Parser
 private:
     vector<Token> tokens;
     size_t pos;
-    Lexer &lexer; // Reference to the Lexer instance
+    Lexer &lexer;
 
 public:
     Parser(const vector<Token> &tokens, Lexer &lexer) : tokens(tokens), pos(0), lexer(lexer) {}
@@ -179,7 +259,8 @@ public:
 
     void parseStatement()
     {
-        if (tokens[pos].type == T_INT)
+        if (tokens[pos].type == T_INT || tokens[pos].type == T_FLOAT || tokens[pos].type == T_DOUBLE ||
+            tokens[pos].type == T_STRING || tokens[pos].type == T_CHAR || tokens[pos].type == T_BOOL)
         {
             parseDeclaration();
         }
@@ -187,7 +268,7 @@ public:
         {
             parseAssignment();
         }
-        else if (tokens[pos].type == T_IF)
+        else if (tokens[pos].type == T_AGAR) // Custom 'if' keyword (Agar)
         {
             parseIfStatement();
         }
@@ -198,6 +279,10 @@ public:
         else if (tokens[pos].type == T_LBRACE)
         {
             parseBlock();
+        }
+        else if (tokens[pos].type == T_WHILE || tokens[pos].type == T_FOR)
+        {
+            parseLoop();
         }
         else
         {
@@ -218,7 +303,12 @@ public:
 
     void parseDeclaration()
     {
-        expect(T_INT);
+        // Accept all types now
+        if (tokens[pos].type == T_INT || tokens[pos].type == T_FLOAT || tokens[pos].type == T_DOUBLE ||
+            tokens[pos].type == T_STRING || tokens[pos].type == T_CHAR || tokens[pos].type == T_BOOL)
+        {
+            pos++;
+        }
         expect(T_ID);
         expect(T_SEMICOLON);
     }
@@ -233,7 +323,7 @@ public:
 
     void parseIfStatement()
     {
-        expect(T_IF);
+        expect(T_AGAR); // Custom 'if'
         expect(T_LPAREN);
         parseExpression();
         expect(T_RPAREN);
@@ -241,6 +331,29 @@ public:
         if (tokens[pos].type == T_ELSE)
         {
             expect(T_ELSE);
+            parseStatement();
+        }
+    }
+
+    void parseLoop()
+    {
+        if (tokens[pos].type == T_WHILE)
+        {
+            expect(T_WHILE);
+            expect(T_LPAREN);
+            parseExpression();
+            expect(T_RPAREN);
+            parseStatement();
+        }
+        else if (tokens[pos].type == T_FOR)
+        {
+            expect(T_FOR);
+            expect(T_LPAREN);
+            parseStatement();
+            parseExpression();
+            expect(T_SEMICOLON);
+            parseStatement();
+            expect(T_RPAREN);
             parseStatement();
         }
     }
@@ -255,15 +368,12 @@ public:
     void parseExpression()
     {
         parseTerm();
-        while (tokens[pos].type == T_PLUS || tokens[pos].type == T_MINUS)
+        while (tokens[pos].type == T_PLUS || tokens[pos].type == T_MINUS || tokens[pos].type == T_GT ||
+               tokens[pos].type == T_LT || tokens[pos].type == T_EQ || tokens[pos].type == T_NEQ ||
+               tokens[pos].type == T_AND || tokens[pos].type == T_OR)
         {
             pos++;
             parseTerm();
-        }
-        if (tokens[pos].type == T_GT)
-        {
-            pos++;
-            parseExpression(); 
         }
     }
 
@@ -291,76 +401,28 @@ public:
         }
         else
         {
-            cout << "Syntax error: unexpected token " << tokens[pos].value << " at line " << lexer.getLineNumber() << endl;
+            cout << "Syntax error: expected number or identifier at line " << lexer.getLineNumber() << endl;
             exit(1);
         }
     }
-    string tokenTypeToString(TokenType type)
-{
-    switch (type)
-    {
-    case T_INT:
-        return "Int";
-    case T_ID:
-        return "ID";
-    case T_NUM:
-        return "Num";
-    case T_IF:
-        return "T_IF";
-    case T_ELSE:
-        return "else";
-    case T_RETURN:
-        return "Return";
-    case T_ASSIGN:
-        return "Assign";
-    case T_PLUS:
-        return "Plus";
-    case T_MINUS:
-        return "Minus";
-    case T_MUL:
-        return "Multiplication";
-    case T_DIV:
-        return "Divide";
-    case T_LPAREN:
-        return "Left parenthesis";
-    case T_RPAREN:
-        return "Right parenthesis";
-    case T_LBRACE:
-        return "Left brace";
-    case T_RBRACE:
-        return "Right brace";
-    case T_SEMICOLON:
-        return "Semicolon";
-    case T_GT:
-        return "Greater than";
-    case T_FLT:
-        return "Float";
-    case T_EOF:
-        return "EOF";
-    default:
-        return "UNKNOWN";
-    }
-}
 
-
-    void expect(TokenType type)
+    void expect(TokenType expected)
     {
-        if (tokens[pos].type == type)
+        if (tokens[pos].type == expected)
         {
             pos++;
         }
         else
         {
-            cout << "Syntax error: expected " << tokenTypeToString(type)
-             << " but found " << tokens[pos].value
-             << " at line " << lexer.getLineNumber() << endl;
-        exit(1);
+            cout << "Syntax error: expected token " << expected << " at line " << lexer.getLineNumber() << endl;
+            exit(1);
         }
     }
 };
 
 int main(int argc, char *argv[])
 {
+    
     if (argc != 2)
     {
         cout << "Usage: " << argv[0] << " <source-file>" << endl;
@@ -375,6 +437,7 @@ int main(int argc, char *argv[])
     }
 
     string input((istreambuf_iterator<char>(file)), istreambuf_iterator<char>());
+
     Lexer lexer(input);
     vector<Token> tokens = lexer.tokenize();
 
