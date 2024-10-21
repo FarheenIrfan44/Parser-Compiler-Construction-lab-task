@@ -331,22 +331,7 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    string line;
-    string input;
-    int argCount = 0;
-    while (getline(file, line))
-    {
-        stringstream ss(line);
-        string word;
-
-        while (ss >> word)
-        {
-            input = input + word;
-        }
-        
-    }
-
-   
+    string input((istreambuf_iterator<char>(file)), istreambuf_iterator<char>());
     Lexer lexer(input);
     vector<Token> tokens = lexer.tokenize();
 
