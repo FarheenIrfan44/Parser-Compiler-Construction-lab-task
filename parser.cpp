@@ -102,7 +102,7 @@ public:
                     tokens.push_back(Token{T_BOOL, word});
                 else if (word == "char")
                     tokens.push_back(Token{T_CHAR, word});
-                else if (word == "agar") // Custom keyword for 'if'
+                else if (word == "agar") 
                     tokens.push_back(Token{T_AGAR, word});
                 else if (word == "else")
                     tokens.push_back(Token{T_ELSE, word});
@@ -268,7 +268,7 @@ public:
         {
             parseAssignment();
         }
-        else if (tokens[pos].type == T_AGAR) // Custom 'if' keyword (Agar)
+        else if (tokens[pos].type == T_AGAR) 
         {
             parseIfStatement();
         }
