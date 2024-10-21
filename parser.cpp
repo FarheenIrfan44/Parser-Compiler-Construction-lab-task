@@ -2,7 +2,8 @@
 #include <vector>
 #include <map>
 #include <cctype>
-#include<fstream>
+#include <fstream>
+#include <sstream>
 #include <string>
 
 using namespace std;
@@ -316,7 +317,8 @@ int main(int argc, char *argv[])
         }
     )";
 */
- if (argc != 2)
+
+    if (argc != 2)
     {
         cout << "Usage: " << argv[0] << " <source-file>" << endl;
         return 1;
@@ -329,7 +331,22 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    string input((istreambuf_iterator<char>(file)), istreambuf_iterator<char>());
+    string line;
+    string input;
+    int argCount = 0;
+    while (getline(file, line))
+    {
+        stringstream ss(line);
+        string word;
+
+        while (ss >> word)
+        {
+            input = input + word;
+        }
+        
+    }
+
+   
     Lexer lexer(input);
     vector<Token> tokens = lexer.tokenize();
 
