@@ -2,6 +2,8 @@ int a;
 a = 5;
 int b;
 b = 2;
+float c;
+//It is comment
 if(b == 10){
   return b;
 }
